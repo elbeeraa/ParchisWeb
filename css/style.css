@@ -90,19 +90,19 @@ h1 {
     justify-content: center;
     align-items: center;
     cursor: default;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    /* transition: transform 0.15s ease, box-shadow 0.15s ease; */
     position: relative;
     font-weight: bold;
     font-size: 0.72em;
     color: #222;
 }
 
-.cell:hover {
+/* .cell:hover {
     transform: none;
     box-shadow: none;
-}
+} */
 
-.track-cell {
+.track {
     background: #ffffff;
 }
 
@@ -132,27 +132,32 @@ h1 {
 }
 
 .safe {
-    box-shadow: inset 0 0 0 2px rgba(255, 153, 0, 0.85);
+    box-shadow: inset 0 0 0 2px rgb(0, 0, 0);
 }
 
-.start {
-    box-shadow: inset 0 0 0 2px rgba(255, 153, 0, 0.95);
+.goal {
+    background: #a63cff;
+    border-color: rgba(0, 0, 0, 0.3);
 }
+
+/* .start {
+    box-shadow: inset 0 0 0 2px rgba(255, 153, 0, 0.95);
+} */
 
 .start-red {
-    background: #ff8f1f;
+    background: #ff3b1f;
 }
 
 .start-blue {
-    background: #ff8f1f;
+    background: #3f7cf1;
 }
 
 .start-green {
-    background: #ff8f1f;
+    background: #49c94e;
 }
 
 .start-yellow {
-    background: #ff8f1f;
+    background: #f1e50a;
 }
 
 .lane-cell {

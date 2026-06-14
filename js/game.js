@@ -36,6 +36,7 @@ class Game {
 
 	startGame() {
 		this.board.initializeBoard();
+		this.board.render();
 		this.updateUI();
 		this.setStatus('Juego iniciado. Pulsa Tirar Dados.');
 	}
@@ -72,6 +73,8 @@ class Game {
 		this.initializePlayers();
 		this.board.clearBoard();
 		this.board.initializeBoard();
+		this.board.render();
+
 		this.diceResultElement.textContent = '---';
 		this.updateUI();
 		this.setStatus('Juego reiniciado.');
