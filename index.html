@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parchís</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="info-panel">
+            <h1>PARCHÍS</h1>
+            <div class="player-info">
+                <div class="current-player" id="currentPlayer">Jugador 1</div>
+                <div class="dice-result" id="diceResult">---</div>
+            </div>
+        </div>
+
+        <div class="game-board" id="gameBoard">
+            <!-- El tablero se generará con JavaScript -->
+        </div>
+
+        <div class="control-panel">
+            <button id="rollDiceBtn" class="btn btn-primary">🎲 Tirar Dados</button>
+            <button id="resetBtn" class="btn btn-secondary">🔄 Reiniciar Juego</button>
+            <div class="status" id="gameStatus">Estado: Esperando...</div>
+        </div>
+    </div>
+
+    <script src="js/player.js"></script>
+    <script src="js/piece.js"></script>
+    <script src="js/board.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
