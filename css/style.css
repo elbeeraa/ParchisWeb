@@ -68,74 +68,135 @@ h1 {
 /* GAME BOARD */
 .game-board {
     display: grid;
-    grid-template-columns: repeat(15, 1fr);
-    gap: 5px;
-    background: #fff3e0;
-    padding: 15px;
-    border-radius: 10px;
+    grid-template-columns: repeat(19, minmax(0, 1fr));
+    grid-template-rows: repeat(19, minmax(0, 1fr));
+    gap: 0;
+    background: #e08ccb;
+    padding: 10px;
+    border-radius: 8px;
     margin-bottom: 20px;
     aspect-ratio: 1;
-    max-width: 700px;
+    max-width: 880px;
     margin-left: auto;
     margin-right: auto;
 }
 
 .cell {
     aspect-ratio: 1;
-    border: 2px solid #ddd;
-    border-radius: 5px;
-    background: white;
+    border: 1px solid rgba(75, 55, 55, 0.25);
+    border-radius: 0;
+    background: #ffffff;
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    cursor: default;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
     position: relative;
     font-weight: bold;
-    font-size: 0.8em;
+    font-size: 0.72em;
+    color: #222;
 }
 
 .cell:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: none;
+    box-shadow: none;
 }
 
-/* Colores por jugador */
-.cell.player-1 {
-    background: #ffe0e0;
-    border-color: #ff4444;
+.track-cell {
+    background: #ffffff;
 }
 
-.cell.player-2 {
-    background: #e0ffe0;
-    border-color: #44ff44;
+.blocked-cell {
+    background: #d98ec7;
+    border-color: rgba(180, 90, 160, 0.12);
 }
 
-.cell.player-3 {
-    background: #ffffe0;
-    border-color: #ffaa00;
+.home-cell {
+    border: 1px solid rgba(0, 0, 0, 0.25);
 }
 
-.cell.player-4 {
-    background: #e0e0ff;
-    border-color: #4444ff;
+.home-red {
+    background: #ff3b1f;
 }
 
-.cell.safe {
-    border-width: 3px;
-    background: #f0f0f0;
+.home-blue {
+    background: #3f7cf1;
 }
 
-.cell.start {
-    background: #fff9c4;
-    border-color: #ff6f00;
-    border-width: 3px;
+.home-green {
+    background: #49c94e;
 }
 
-.cell.goal {
-    background: #e8f5e9;
-    border-color: #2e7d32;
-    border-width: 3px;
+.home-yellow {
+    background: #f1e50a;
+}
+
+.safe {
+    box-shadow: inset 0 0 0 2px rgba(255, 153, 0, 0.85);
+}
+
+.start {
+    box-shadow: inset 0 0 0 2px rgba(255, 153, 0, 0.95);
+}
+
+.start-red {
+    background: #ff8f1f;
+}
+
+.start-blue {
+    background: #ff8f1f;
+}
+
+.start-green {
+    background: #ff8f1f;
+}
+
+.start-yellow {
+    background: #ff8f1f;
+}
+
+.lane-cell {
+    color: #111;
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+.track-cell {
+    background: #ffffff;
+    color: #1d1d1d;
+    font-size: 0.7em;
+}
+
+.track-cell.safe {
+    box-shadow: inset 0 0 0 2px rgba(255, 153, 0, 0.95);
+}
+
+.track-cell.start {
+    background: #ffb04d;
+}
+
+.lane-red {
+    background: #e34a36;
+}
+
+.lane-blue {
+    background: #4b7ef2;
+}
+
+.lane-green {
+    background: #49c94e;
+}
+
+.lane-yellow {
+    background: #f4dc19;
+}
+
+.center-cell {
+    background: #a63cff;
+    border-color: rgba(0, 0, 0, 0.3);
+}
+
+.center-goal {
+    background: #a63cff;
 }
 
 /* PIECES */
@@ -246,9 +307,8 @@ h1 {
     }
 
     .game-board {
-        grid-template-columns: repeat(12, 1fr);
-        gap: 3px;
-        padding: 10px;
+        gap: 0;
+        padding: 8px;
     }
 
     .btn {
@@ -281,8 +341,7 @@ h1 {
     }
 
     .game-board {
-        grid-template-columns: repeat(10, 1fr);
-        gap: 2px;
+        gap: 0;
         padding: 5px;
     }
 
