@@ -15,18 +15,34 @@ class Game {
 	}
 
 	initializePlayers() {
-		this.players = [
-			new Player(1, 'Rojo', 'red'),
-			new Player(2, 'Verde', 'green'),
-			new Player(3, 'Amarillo', 'yellow'),
-			new Player(4, 'Azul', 'blue')
-		];
+		
+		const red = new Player(1, 'Rojo', 'red');
+		const green = new Player(2, 'Verde', 'green');
+		const yellow = new Player(3, 'Amarillo', 'yellow');
+		const blue = new Player(4, 'Azul', 'blue');
+		
+		red.addPiece(new Piece(1, red, 2, 2));
+		red.addPiece(new Piece(2, red, 2, 4));
+		red.addPiece(new Piece(3, red, 4, 2));
+		red.addPiece(new Piece(4, red, 4, 4));
 
-		this.players.forEach(player => {
-			for (let i = 1; i <= 4; i++) {
-				player.addPiece(new Piece(i, player));
-			}
-		});
+		green.addPiece(new Piece(5, green, 14, 2));
+		green.addPiece(new Piece(6, green, 16, 2));
+		green.addPiece(new Piece(7, green, 14, 4));
+		green.addPiece(new Piece(8, green, 16, 4));
+
+		yellow.addPiece(new Piece(9, yellow, 14, 14));
+		yellow.addPiece(new Piece(10, yellow, 14, 16));
+		yellow.addPiece(new Piece(11, yellow, 16, 14));
+		yellow.addPiece(new Piece(12, yellow, 16, 16));
+
+		blue.addPiece(new Piece(13, blue, 2, 14));
+		blue.addPiece(new Piece(14, blue, 4, 14));
+		blue.addPiece(new Piece(15, blue, 4, 16));
+		blue.addPiece(new Piece(16, blue, 2, 16));
+
+		this.players.push(red, green, yellow, blue);
+
 	}
 
 	bindEvents() {
@@ -36,7 +52,7 @@ class Game {
 
 	startGame() {
 		this.board.initializeBoard();
-		this.board.render();
+		this.board.render(this.players);
 		this.updateUI();
 		this.setStatus('Juego iniciado. Pulsa Tirar Dados.');
 	}
@@ -62,6 +78,7 @@ class Game {
 		this.currentPlayerElement.textContent = currentPlayer.name;
 		this.currentPlayerElement.style.borderColor = currentPlayer.color;
 		this.currentPlayerElement.style.color = currentPlayer.color;
+		this.board.render(this.players);
 	}
 
 	setStatus(message) {
@@ -73,7 +90,7 @@ class Game {
 		this.initializePlayers();
 		this.board.clearBoard();
 		this.board.initializeBoard();
-		this.board.render();
+		this.board.render(this.players);
 
 		this.diceResultElement.textContent = '---';
 		this.updateUI();
@@ -84,5 +101,3 @@ class Game {
 document.addEventListener('DOMContentLoaded', () => {
 	new Game();
 });
-
-

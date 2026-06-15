@@ -102,7 +102,7 @@ class Board {
         return this.cells.find(cell => cell.position === position);
     }
 
-    render() {
+    render(players) {
 
         const board = document.getElementById("gameBoard");
 
@@ -114,6 +114,7 @@ class Board {
 
             div.classList.add("cell");
             div.classList.add(cell.type);
+            cell.element = div;
             //PARA QUE PUEDA SABER EN QUE COL Y FILA ESTA CADA CELDA
             div.style.gridRow = cell.row + 1;
             div.style.gridColumn = cell.col + 1;
@@ -127,7 +128,8 @@ class Board {
             }
 
             if (cell.startColor) {
-                div.classList.add(`start-${cell.startColor}`);
+                div.classList.add("start");
+                div.classList.add(`${cell.startColor}`);
             }
 
             if (cell.goalColor) {
@@ -138,6 +140,48 @@ class Board {
 
         });
 
+        this.renderPieces(players);
+
+    }
+
+    renderPieces(players) {
+        players.forEach(player => {
+
+             player.pieces.forEach(piece => {
+
+                let cell;
+
+                // FICHA EN CASA
+                if (piece.position === null) {
+
+                    cell = this.getCellByCoords(
+                        piece.homeRow,
+                        piece.homeCol
+                    );
+                }
+
+                // FICHA EN EL RECORRIDO
+                 else {
+
+                    cell = this.cells.find(
+                        c => c.position === piece.position
+                    );
+
+                }
+
+                if (!cell) return;
+
+                const pieceDiv = document.createElement("div");
+
+                pieceDiv.classList.add("piece");
+                pieceDiv.classList.add(player.color);
+
+                // pieceDiv.textContent = piece.id;
+
+                cell.element.appendChild(pieceDiv);
+
+            });
+        });
     }
 
     clearBoard() {

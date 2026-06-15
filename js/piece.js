@@ -1,10 +1,14 @@
 class Piece{
-    constructor(id, player) {
+    constructor(id, player, homeRow, homeCol) {
         this.id = id;
         this.player = player;
         this.position = null;
         this.inHome = true;
         this.inGoal = false;
+
+        
+        this.homeRow = homeRow;
+        this.homeCol = homeCol;
     }
 
     move(steps) {
@@ -46,5 +50,9 @@ class Piece{
     isInGoal() {
         return this.inGoal;
     } 
+
+    countPiecesHome(){
+        return this.player.pieces.filter(piece => piece.isInHome()).length;
+    }
 
 }
