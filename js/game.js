@@ -15,6 +15,8 @@ class Game {
 	}
 
 	initializePlayers() {
+
+		this.players = [];
 		
 		const red = new Player(1, 'Rojo', 'red');
 		const green = new Player(2, 'Verde', 'green');
@@ -64,7 +66,23 @@ class Game {
 	rollDice() {
 		const result = Math.floor(Math.random() * 6) + 1;
 		this.diceResultElement.textContent = result;
-		this.setStatus(`${this.getCurrentPlayer().name} ha sacado un ${result}.`);
+		const player = this.getCurrentPlayer();
+		this.setStatus(`${player.name} ha sacado un ${result}.`);
+		if(result === 5 && player.hasPiecesInHome()) {
+			const piece = player.pieces.find(
+       		piece => piece.isInHome()
+   			);
+			
+			const startPosition = this.board.getStartPosition(player.color);
+   			piece.sendToPlay(startPosition);
+
+    		this.updateUI();
+
+			this.nextTurn();
+			return;
+		}
+
+
 		this.nextTurn();
 	}
 
@@ -91,6 +109,7 @@ class Game {
 		this.board.clearBoard();
 		this.board.initializeBoard();
 		this.board.render(this.players);
+		
 
 		this.diceResultElement.textContent = '---';
 		this.updateUI();

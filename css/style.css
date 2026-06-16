@@ -206,6 +206,7 @@ h1 {
 
 /* PIECES */
 .piece {
+    position: absolute;
     width: 70%;
     height: 70%;
     border-radius: 50%;

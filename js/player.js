@@ -25,8 +25,14 @@ class Player {
         return this.pieces.filter(piece => piece.isInPlay());
     }
 
-    getPiecesInHome() {
-        return this.pieces.filter(piece => piece.isInHome());
+    // getPiecesInHome() {
+    //     return this.pieces.filter(piece => piece.isInHome());
+    // }
+
+    hasPiecesInHome() {
+        return this.pieces.some(
+            piece => piece.isInHome()
+        );
     }
 
     isDone() {

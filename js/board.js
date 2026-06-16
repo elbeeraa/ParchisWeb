@@ -92,6 +92,15 @@ class Board {
         this.getCellByCoords(9, 9).goalColor = "purple";
     }
 
+    getStartPosition(color) {
+
+         const cell = this.cells.find(
+            cell => cell.startColor === color
+        );
+
+        return cell ? cell.position : null;
+    }
+
     getCellByCoords(row, col) {
         return this.cells.find(
             cell => cell.row === row && cell.col === col
@@ -166,7 +175,8 @@ class Board {
                     cell = this.cells.find(
                         c => c.position === piece.position
                     );
-
+                    console.log(piece.position);
+                    console.log(cell);
                 }
 
                 if (!cell) return;
