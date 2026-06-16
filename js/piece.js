@@ -12,9 +12,9 @@ class Piece{
     }
 
     move(steps) {
-        if(!this.inHome && !this.inGoal) {
-            this.position += steps;
-        }
+        if (this.inHome || this.inGoal) return;
+
+        this.position = ((this.position - 1 + steps) % 72) + 1;
     }
 
     sendToHome() {

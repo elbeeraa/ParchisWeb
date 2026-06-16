@@ -111,7 +111,7 @@ class Board {
         return this.cells.find(cell => cell.position === position);
     }
 
-    render(players) {
+    render(players,game) {
 
         const board = document.getElementById("gameBoard");
 
@@ -149,11 +149,11 @@ class Board {
 
         });
 
-        this.renderPieces(players);
+        this.renderPieces(players,game);
 
     }
 
-    renderPieces(players) {
+    renderPieces(players,game) {
         players.forEach(player => {
 
              player.pieces.forEach(piece => {
@@ -175,8 +175,7 @@ class Board {
                     cell = this.cells.find(
                         c => c.position === piece.position
                     );
-                    console.log(piece.position);
-                    console.log(cell);
+                    
                 }
 
                 if (!cell) return;
@@ -185,6 +184,10 @@ class Board {
 
                 pieceDiv.classList.add("piece");
                 pieceDiv.classList.add(player.color);
+                
+                pieceDiv.addEventListener("click", () => {
+                    game.selectPiece(piece);
+                });
 
                 // pieceDiv.textContent = piece.id;
 

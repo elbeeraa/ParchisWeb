@@ -8,6 +8,7 @@ class Game {
 		this.gameStatusElement = document.getElementById('gameStatus');
 		this.rollDiceButton = document.getElementById('rollDiceBtn');
 		this.resetButton = document.getElementById('resetBtn');
+		this.diceResult = null;
 
 		this.initializePlayers();
 		this.bindEvents();
@@ -64,11 +65,28 @@ class Game {
 	}
 
 	rollDice() {
-		const result = Math.floor(Math.random() * 6) + 1;
-		this.diceResultElement.textContent = result;
-		const player = this.getCurrentPlayer();
-		this.setStatus(`${player.name} ha sacado un ${result}.`);
-		if(result === 5 && player.hasPiecesInHome()) {
+
+		// Tirar dado.
+		// Guardar el resultado en this.diceResult.
+		// Hacer clic en una ficha.
+		// Mover esa ficha.
+		// Actualizar tablero.
+		// Pasar turno.
+
+
+		if (this.diceResult !== null) {
+    		return;
+		}
+
+		this.diceResult = Math.floor(Math.random() * 6) + 1;
+
+    	this.diceResultElement.textContent = this.diceResult;
+
+    	const player = this.getCurrentPlayer();
+
+
+		if(this.diceResult === 5 && player.hasPiecesInHome()) {
+			this.setStatus(`${player.name} ha sacado un ${this.diceResult}.`);
 			const piece = player.pieces.find(
        		piece => piece.isInHome()
    			);
@@ -76,19 +94,41 @@ class Game {
 			const startPosition = this.board.getStartPosition(player.color);
    			piece.sendToPlay(startPosition);
 
-    		this.updateUI();
+			this.updateUI();
 
-			this.nextTurn();
+       		setTimeout(() => {
+            	this.nextTurn();
+        	}, 1200);
+
 			return;
 		}
 
+		if(player.getPiecesInPlay().length === 0) {
+			this.setStatus(
+        		`${player.name} no puede mover ninguna ficha.`
+    		);
+			
+			this.updateUI();
 
-		this.nextTurn();
+       		setTimeout(() => {
+            	this.nextTurn();
+        	}, 1200);
+			
+			return;
+		}
+
+    	this.setStatus(
+        	`${player.name} ha sacado un ${this.diceResult}. Selecciona una ficha.`
+    	);
 	}
 
 	nextTurn() {
+
 		this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
-		this.updateUI();
+
+    	this.diceResult = null;
+
+    	this.updateUI();
 	}
 
 	updateUI() {
@@ -96,7 +136,24 @@ class Game {
 		this.currentPlayerElement.textContent = currentPlayer.name;
 		this.currentPlayerElement.style.borderColor = currentPlayer.color;
 		this.currentPlayerElement.style.color = currentPlayer.color;
-		this.board.render(this.players);
+		this.diceResultElement.textContent = this.diceResult !== null ? this.diceResult : '---';
+		this.board.render(this.players,this);
+	}
+
+	selectPiece(piece){
+		if (this.diceResult === null) {
+        	return;
+    	}
+
+    	const player = this.getCurrentPlayer();
+
+    	if (piece.player !== player) {
+        	return;
+    	}
+
+		piece.move(this.diceResult);
+
+    	this.nextTurn();
 	}
 
 	setStatus(message) {
