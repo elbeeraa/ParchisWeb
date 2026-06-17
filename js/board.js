@@ -185,11 +185,11 @@ class Board {
                 pieceDiv.classList.add("piece");
                 pieceDiv.classList.add(player.color);
                 
-                pieceDiv.addEventListener("click", () => {
-                    game.selectPiece(piece);
-                });
-
-                // pieceDiv.textContent = piece.id;
+                if (!piece.isInGoal() && !piece.isInHome()) {
+                    pieceDiv.addEventListener("click", () => {
+                        game.selectPiece(piece);
+                    });
+                }
 
                 cell.element.appendChild(pieceDiv);
 

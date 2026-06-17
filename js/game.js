@@ -141,6 +141,9 @@ class Game {
 	}
 
 	selectPiece(piece){
+
+		if(piece.isInHome() || piece.isInGoal()) return;
+		
 		if (this.diceResult === null) {
         	return;
     	}
