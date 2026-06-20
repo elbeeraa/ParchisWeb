@@ -140,6 +140,24 @@ class Game {
 		this.board.render(this.players,this);
 	}
 
+	canMove(piece, steps) {
+
+    	const newPosition =
+       		((piece.position - 1 + steps) % 72) + 1;
+
+    	// Fichas en esa posición
+    	const piecesInCell = this.players
+        	.flatMap(player => player.pieces)
+        	.filter(other =>
+
+            other.position === newPosition &&
+            other.isInPlay()
+
+        );
+
+    	return piecesInCell.length < 2;
+	}
+
 	selectPiece(piece){
 
 		if(piece.isInHome() || piece.isInGoal()) return;
@@ -156,6 +174,11 @@ class Game {
         	return;
     	}
 
+		if(!this.canMove(piece, this.diceResult)) {
+			this.setStatus(`${player.name} no puede mover la ficha ${piece.id} a la posición ${((piece.position - 1 + this.diceResult) % 72) + 1}.`);
+			return;
+		}
+		
 		piece.move(this.diceResult);
 
 		console.log(`Ficha movida a la posición: ${piece.getPosition()}`);
