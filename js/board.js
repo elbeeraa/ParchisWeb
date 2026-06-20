@@ -129,7 +129,10 @@ class Board {
             div.style.gridColumn = cell.col + 1;
 
             if (cell.type === "track") {
-                div.textContent = cell.position;
+                const numberDiv = document.createElement("span");
+                numberDiv.classList.add("cell-number");
+                numberDiv.textContent = cell.position;
+                div.appendChild(numberDiv);
             }
 
             if (cell.safe) {
@@ -154,6 +157,8 @@ class Board {
     }
 
     renderPieces(players,game) {
+
+
         players.forEach(player => {
 
              player.pieces.forEach(piece => {
@@ -184,7 +189,8 @@ class Board {
 
                 pieceDiv.classList.add("piece");
                 pieceDiv.classList.add(player.color);
-                
+
+
                 if (!piece.isInGoal() && !piece.isInHome()) {
                     pieceDiv.addEventListener("click", () => {
                         game.selectPiece(piece);
@@ -195,6 +201,11 @@ class Board {
 
             });
         });
+    }
+
+    isSafeCell(position) {
+        const cell = this.getCellByPosition(position);
+        return cell ? cell.safe : false;
     }
 
     clearBoard() {

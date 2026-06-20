@@ -81,15 +81,24 @@ h1 {
     margin-right: auto;
 }
 
+.cell-number {
+    position: absolute;
+    z-index: 1;
+}
+
 .cell {
     aspect-ratio: 1;
     border: 1px solid rgba(75, 55, 55, 0.25);
     border-radius: 0;
     background: #ffffff;
+
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: default;
+    flex-wrap: wrap;
+    gap: 2px;
+
     /* transition: transform 0.15s ease, box-shadow 0.15s ease; */
     position: relative;
     font-weight: bold;
@@ -206,9 +215,8 @@ h1 {
 
 /* PIECES */
 .piece {
-    position: absolute;
-    width: 70%;
-    height: 70%;
+    width: 45%;
+    height: 45%;
     border-radius: 50%;
     border: 2px solid white;
     display: flex;
@@ -220,6 +228,9 @@ h1 {
     color: white;
     transition: all 0.2s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+
+    position: relative;
+    z-index: 2;
 }
 
 .piece:hover {

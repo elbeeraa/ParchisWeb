@@ -143,7 +143,9 @@ class Game {
 	selectPiece(piece){
 
 		if(piece.isInHome() || piece.isInGoal()) return;
-		
+
+		console.log(`Ficha seleccionada: ${piece.id} del jugador ${piece.player.name}`);
+
 		if (this.diceResult === null) {
         	return;
     	}
@@ -156,11 +158,63 @@ class Game {
 
 		piece.move(this.diceResult);
 
-    	this.nextTurn();
+		console.log(`Ficha movida a la posición: ${piece.getPosition()}`);
+
+		this.checkKill(piece);
+		this.checkWin(piece);
+		
+		if(this.checkExtraTurn(this.diceResult)) {
+
+			this.updateUI();
+
+			this.diceResult = null;
+
+			this.setStatus(`${player.name} ha sacado un 6. Selecciona una ficha y puede volver a tirar.`);
+
+		} else {
+			
+			this.nextTurn();
+		}
+		
 	}
 
 	setStatus(message) {
 		this.gameStatusElement.textContent = `Estado: ${message}`;
+	}
+
+	checkKill(piece) {
+
+		//PRIMERO SELECCIONAMOS TODAS LAS FICHAS DEL JUEGO CON FLATMAP Y LUEGO CON FIND BUSCAMOS CON LAS CONDICIONES.
+		const enemyPiece = this.players
+    		.flatMap(player => player.pieces)
+    		.find(other =>
+
+       			other !== piece &&
+       			other.position === piece.position &&
+        		other.player !== piece.player
+
+    	);
+		if(enemyPiece && !this.checkSafeCell(enemyPiece.position)) {
+			this.setStatus(`${piece.player.name} ha matado a una ficha de ${enemyPiece.player.name}.`);
+			enemyPiece.sendToHome();
+		}
+		
+	}
+
+	//TODO TODA LA LOGICA DE GANAR EL JUEGO
+	checkWin(piece) {
+		if(piece.isInGoal()) {
+			this.setStatus(`${piece.player.name} ha ganado el juego!`);
+			this.rollDiceButton.disabled = true;
+		}
+	}
+
+	checkExtraTurn(diceResult) {
+		return diceResult === 6;
+	}
+
+	checkSafeCell(position) {
+    	return this.board.isSafeCell(position);
 	}
 
 	resetGame() {
