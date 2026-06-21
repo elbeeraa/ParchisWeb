@@ -10,7 +10,11 @@ class Game {
 		this.resetButton = document.getElementById('resetBtn');
 		this.diceResult = null;
 
-		const numberCounter = 0;
+		this.numberCounter = 0;
+		this.mustSelectPieceToHome = false;
+
+		this.mustSelectPieceAdvantage = false;
+		
 
 		this.initializePlayers();
 		this.bindEvents();
@@ -66,15 +70,11 @@ class Game {
 		return this.players[this.currentPlayerIndex];
 	}
 
+	setStatus(message) {
+		this.gameStatusElement.textContent = `Estado: ${message}`;
+	}
+
 	rollDice() {
-
-		// Tirar dado.
-		// Guardar el resultado en this.diceResult.
-		// Hacer clic en una ficha.
-		// Mover esa ficha.
-		// Actualizar tablero.
-		// Pasar turno.
-
 
 		if (this.diceResult !== null) {
     		return;
@@ -85,15 +85,18 @@ class Game {
     	this.diceResultElement.textContent = this.diceResult;
 
     	const player = this.getCurrentPlayer();
+		const startPosition = this.board.getStartPosition(player.color);
 
+		if(this.checkTripleSix(player)) {
+			return;
+		}
 
-		if(this.diceResult === 5 && player.hasPiecesInHome()) {
+		if(this.diceResult === 5 && player.hasPiecesInHome() && this.canPieceStart(startPosition)) {
 			this.setStatus(`${player.name} ha sacado un ${this.diceResult}.`);
 			const piece = player.pieces.find(
        		piece => piece.isInHome()
    			);
 			
-			const startPosition = this.board.getStartPosition(player.color);
    			piece.sendToPlay(startPosition);
 
 			this.updateUI();
@@ -124,6 +127,28 @@ class Game {
     	);
 	}
 
+	checkTripleSix(player) {
+
+		if (this.diceResult !== 6) {
+        	return false;
+    	}
+
+    	this.numberCounter++;
+
+    	if (this.numberCounter === 3) {
+
+        	this.mustSelectPieceToHome = true;
+
+        	this.diceResult = null;
+
+        	this.setStatus(`${player.name} ha sacado 3 veces 6. Selecciona una ficha para enviarla a casa.`);
+
+        	return true;
+    	}
+
+    	return false;
+	}
+
 	nextTurn() {
 
 		this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
@@ -142,7 +167,49 @@ class Game {
 		this.board.render(this.players,this);
 	}
 
+	canPieceStart(startPosition) {
+		//TODAS LAS FICHAS EN LA POSICION DE SALIDA DESEADA
+		const piecesInStartCell = this.players
+        .flatMap(player => player.pieces)
+        .filter(piece =>
+
+            piece.position === startPosition &&
+            piece.isInPlay()
+
+        );
+
+    	const currentPlayer = this.getCurrentPlayer();
+
+    	// FICHAS QUE SON DE ESA SALIDA
+    	const ownPieces = piecesInStartCell.filter(
+        	piece => piece.player === currentPlayer
+    	);
+
+    	// FICHAS ENEMIGAS EN ESA POSICION DE SALIDA
+    	const enemyPieces = piecesInStartCell.filter(
+        	piece => piece.player !== currentPlayer
+    	);
+
+    	// PUENTE 
+    	if (ownPieces.length === 2) {
+        	return false;
+    	}
+
+    	// COME UNA DE LAS FICHAS ENEMIGAS
+    	if (enemyPieces.length > 0 && piecesInStartCell.length === 2) {
+
+        	enemyPieces[0].sendToHome();
+
+    	}
+
+   		return true;
+	}
+
 	canMove(piece, steps) {
+
+		//VALIDA SI LA POSICION FINAL DE LA FICHA ES UNA CELDA SEGURA Y SI HAY MAS DE 2 FICHAS EN ESA CELDA
+
+		//TODO HACER QUE VALIDE SI HAY PUENTES	
 
     	const newPosition =
        		((piece.position - 1 + steps) % 72) + 1;
@@ -162,66 +229,123 @@ class Game {
 
 	selectPiece(piece){
 
-		if(piece.isInHome() || piece.isInGoal()) return;
+		const player = this.getCurrentPlayer();
 
-		console.log(`Ficha seleccionada: ${piece.id} del jugador ${piece.player.name}`);
+		//CASTIGOS
+		//-------------------------------
 
-		if (this.diceResult === null) {
-        	return;
-    	}
-
-    	const player = this.getCurrentPlayer();
-
-    	if (piece.player !== player) {
-        	return;
-    	}
-
-		if(!this.canMove(piece, this.diceResult)) {
-			this.setStatus(`${player.name} no puede mover la ficha ${piece.id} a la posición ${((piece.position - 1 + this.diceResult) % 72) + 1}.`);
+		//castigo de 3 seises
+		if(this.mustSelectPieceToHome) {
+			this.handleTripleSixPenalty(player, piece);
 			return;
 		}
+
+		//VENTAJAS
+		//-------------------------------
+		if(this.mustSelectPieceAdvantage) {
+			this.handleMoveAdvantage(piece, player);
+			return;
+		}
+
+		// VALIDACIÓN 
+		// HAY DADO, JUGADOR ACTUAL, QUE NO ESTE EN CASA NI META
+		if(!this.canSelectPiece(player, piece)) {
+			return;	
+		}
+
+		//MOVIMIENTO DE LA FICHA
+		this.moveSelectedPiece(player, piece);
 		
+	}
+
+	handleMoveAdvantage(piece, player) {
+
+		if (piece.player !== player) {
+        	return;
+    	}
+
+    	if (piece.isInHome() || piece.isInGoal()) {
+        	return;
+    	}
+
+    	if (!this.canMove(piece, 20)) {
+
+        	this.setStatus("No puedes mover esa ficha 20 casillas.");
+
+        	return;
+    	}
+
+    	piece.move(20);
+
+    	this.mustSelectPieceAdvantage = false;
+
+    	this.updateUI();
+
+		// MIRAR SI FUINCIONA CORRECTAMENTE
+    	this.handleNextTurnAfterMove(player);
+	}
+
+	canSelectPiece(player, piece) {
+
+		if(piece.isInHome() || piece.isInGoal()) return false;
+
+    	if (this.diceResult === null) return false;
+
+    	if (piece.player !== player) return false;
+
+    	if(!this.canMove(piece, this.diceResult)) {
+
+        	this.setStatus(`${player.name} no puede mover la ficha ${piece.id}.`);
+        	return false;
+		}
+
+		return true;
+
+	}
+
+	handleTripleSixPenalty(player, piece) {
+		piece.sendToHome();
+
+    	this.mustSelectPieceToHome = false;
+
+    	this.numberCounter = 0;
+
+    	this.setStatus(`${player.name} ha enviado una ficha a casa.`);
+
+    	this.nextTurn();
+	}
+
+	moveSelectedPiece(player, piece) {
 		piece.move(this.diceResult);
 
-		console.log(`Ficha movida a la posición: ${piece.getPosition()}`);
+		const hasKilled = this.checkKill(piece);
 
-		this.checkKill(piece);
+		this.updateUI();
+
+		if(hasKilled) {
+			return;
+		}
+
 		this.checkWin(piece);
-		
-		if(this.checkExtraTurn(this.diceResult)) {
 
-			this.updateUI();
 
+		//GESTIONA EL SIGUIENTE TURNO
+		this.handleNextTurnAfterMove(player);
+	}
+
+	handleNextTurnAfterMove(player) {
+		//SI SACA UN 6, PUEDE VOLVER A TIRAR, SI NO, PASA AL SIGUIENTE JUGADOR
+		if(this.diceResult === 6) {
+			this.setStatus(`${player.name} ha sacado un 6. Puede volver a tirar.`);
 			this.diceResult = null;
-
-			this.checkCounterNumberSix(piece);
-
-			this.setStatus(`${player.name} ha sacado un 6. Selecciona una ficha y puede volver a tirar.`);
-
-		} else {
-			
-			this.nextTurn();
-		}
-		
-	}
-
-	checkCounterNumberSix(piece) {
-		
-		this.numberCounter += 1;
-
-		if(this.numberCounter === 3) {
-			this.setStatus(`${this.getCurrentPlayer().name} ha sacado 3 veces un 6. La ficha seleccionada vuelve a casa.`);
-
-			piece.sendToHome();
-			this.numberCounter = 0;
-			this.nextTurn();
+			this.updateUI();
+			return;
 		}
 
+		this.numberCounter = 0;
+		this.nextTurn();
 	}
 
-	setStatus(message) {
-		this.gameStatusElement.textContent = `Estado: ${message}`;
-	}
 
 	checkKill(piece) {
 
@@ -235,10 +359,15 @@ class Game {
         		other.player !== piece.player
 
     	);
+
 		if(enemyPiece && !this.checkSafeCell(enemyPiece.position)) {
-			this.setStatus(`${piece.player.name} ha matado a una ficha de ${enemyPiece.player.name}.`);
+			this.setStatus(`${piece.player.name} ha matado a una ficha de ${enemyPiece.player.name}. Selecciona una ficha para mover 20 casillas.`);
 			enemyPiece.sendToHome();
+			this.mustSelectPieceAdvantage = true;
+			return true;
 		}
+
+		return false;
 		
 	}
 
@@ -250,9 +379,6 @@ class Game {
 		}
 	}
 
-	checkExtraTurn(diceResult) {
-		return diceResult === 6;
-	}
 
 	checkSafeCell(position) {
     	return this.board.isSafeCell(position);
