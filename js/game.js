@@ -10,6 +10,8 @@ class Game {
 		this.resetButton = document.getElementById('resetBtn');
 		this.diceResult = null;
 
+		const numberCounter = 0;
+
 		this.initializePlayers();
 		this.bindEvents();
 		this.startGame();
@@ -192,6 +194,8 @@ class Game {
 
 			this.diceResult = null;
 
+			this.checkCounterNumberSix(piece);
+
 			this.setStatus(`${player.name} ha sacado un 6. Selecciona una ficha y puede volver a tirar.`);
 
 		} else {
@@ -199,6 +203,20 @@ class Game {
 			this.nextTurn();
 		}
 		
+	}
+
+	checkCounterNumberSix(piece) {
+		
+		this.numberCounter += 1;
+
+		if(this.numberCounter === 3) {
+			this.setStatus(`${this.getCurrentPlayer().name} ha sacado 3 veces un 6. La ficha seleccionada vuelve a casa.`);
+
+			piece.sendToHome();
+			this.numberCounter = 0;
+			this.nextTurn();
+		}
+
 	}
 
 	setStatus(message) {
