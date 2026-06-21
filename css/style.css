@@ -106,10 +106,29 @@ h1 {
     color: #222;
 }
 
-/* .cell:hover {
-    transform: none;
-    box-shadow: none;
-} */
+@keyframes pulseCell {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0px rgba(255, 255, 255, 0);
+        filter: brightness(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 25px rgba(255, 255, 255, 1);
+        filter: brightness(1.6);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0px rgba(255, 255, 255, 0);
+        filter: brightness(1);
+    }
+}
+
+.cell-highlight {
+    animation: pulseCell 0.6s ease-in-out 2;
+}
 
 .track {
     background: #ffffff;
@@ -236,12 +255,6 @@ h1 {
 .piece:hover {
     transform: scale(1.1);
 }
-
-/* .piece.selected {
-    transform: scale(1.2);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5), inset 0 0 5px rgba(255, 255, 255, 0.5);
-} */
-
 
 
 /* CONTROL PANEL */

@@ -158,7 +158,6 @@ class Board {
 
     renderPieces(players,game) {
 
-
         players.forEach(player => {
 
              player.pieces.forEach(piece => {
@@ -183,7 +182,7 @@ class Board {
                     
                 }
 
-                if (!cell) return;
+                if (!cell || !cell.element) return;
 
                 const pieceDiv = document.createElement("div");
 

@@ -5,7 +5,7 @@ export function delay(ms) {
 
 //ANIMACION DE MOVIMIENTO DE FICHA DESDE UNA CELDA A OTRA
 
-export async function animatePieceMovement(game, piece, steps, speed = 200) {
+export async function animatePieceMovement(game, piece, steps, speed = 100) {
 
     for (let i = 0; i < steps; i++) {
 
@@ -18,38 +18,14 @@ export async function animatePieceMovement(game, piece, steps, speed = 200) {
     }
 }
 
-//ANIMACION DE SALIDA DE CASA
-export async function animatePieceStart(game, piece, startPosition, speed = 250) {
 
-    piece.position = startPosition;
-    piece.inHome = false;
+//HACER QUE PARPADEE LA CELDA DONDE SE VA A MOVER LA FICHA
+export async function animateCellPulse(cell, speed = 200) {
+    if (!cell || !cell.element) return;
 
-    game.board.render(game.players, game);
+    cell.element.classList.add("cell-highlight");
 
-    await delay(speed);
-}
+    await new Promise(resolve => setTimeout(resolve, 1200));
 
-//ANIMACION DE MANDAR A CASA
-export async function animatePieceToHome(game, piece, speed = 200) {
-
-    // 1. coger el elemento DOM de la ficha
-    const dom = game.board.getPieceElement?.(piece);
-
-    if (dom) {
-        dom.classList.add("captured");
-    }
-
-    // 2. pequeño delay para que se vea el “golpe”
-    await new Promise(resolve => setTimeout(resolve, speed));
-
-    // 3. cambiar estado lógico
-    piece.sendToHome();
-
-    // 4. refrescar tablero
-    game.board.render(game.players, game);
-
-    // 5. quitar animación (por si reutilizas DOM)
-    if (dom) {
-        dom.classList.remove("captured");
-    }
+    cell.element.classList.remove("cell-highlight");
 }

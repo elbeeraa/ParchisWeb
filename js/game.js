@@ -1,3 +1,9 @@
+
+import { 
+	animatePieceMovement,
+	animateCellPulse
+ } from './animations.js';
+
 class Game {
 	constructor() {
 		this.players = [];
@@ -74,7 +80,7 @@ class Game {
 		this.gameStatusElement.textContent = `Estado: ${message}`;
 	}
 
-	rollDice() {
+	async rollDice() {
 
 		if (this.diceResult !== null) {
     		return;
@@ -94,8 +100,11 @@ class Game {
 		if(this.diceResult === 5 && player.hasPiecesInHome() && this.canPieceStart(startPosition)) {
 			this.setStatus(`${player.name} ha sacado un ${this.diceResult}.`);
 			const piece = player.pieces.find(
-       		piece => piece.isInHome()
+       			piece => piece.isInHome()
    			);
+
+			const startCell = this.board.getCellByPosition(startPosition);
+			await animateCellPulse(startCell);
 			
    			piece.sendToPlay(startPosition);
 
@@ -227,7 +236,7 @@ class Game {
     	return piecesInCell.length < 2;
 	}
 
-	selectPiece(piece){
+	async selectPiece(piece){
 
 		const player = this.getCurrentPlayer();
 
@@ -254,11 +263,11 @@ class Game {
 		}
 
 		//MOVIMIENTO DE LA FICHA
-		this.moveSelectedPiece(player, piece);
+		await this.moveSelectedPiece(player, piece);
 		
 	}
 
-	handleMoveAdvantage(piece, player) {
+	async handleMoveAdvantage(piece, player) {
 
 		if (piece.player !== player) {
         	return;
@@ -275,7 +284,8 @@ class Game {
         	return;
     	}
 
-    	piece.move(20);
+    	// piece.move(20);
+		await animatePieceMovement(this, piece, 20);
 
     	this.mustSelectPieceAdvantage = false;
 
@@ -315,10 +325,11 @@ class Game {
     	this.nextTurn();
 	}
 
-	moveSelectedPiece(player, piece) {
-		piece.move(this.diceResult);
+	async moveSelectedPiece(player, piece) {
+		// piece.move(this.diceResult);\
+		await animatePieceMovement(this, piece, this.diceResult);
 
-		const hasKilled = this.checkKill(piece);
+		const hasKilled = await this.checkKill(piece);
 
 		this.updateUI();
 
@@ -327,7 +338,6 @@ class Game {
 		}
 
 		this.checkWin(piece);
-
 
 		//GESTIONA EL SIGUIENTE TURNO
 		this.handleNextTurnAfterMove(player);
@@ -347,7 +357,7 @@ class Game {
 	}
 
 
-	checkKill(piece) {
+	async checkKill(piece) {
 
 		//PRIMERO SELECCIONAMOS TODAS LAS FICHAS DEL JUEGO CON FLATMAP Y LUEGO CON FIND BUSCAMOS CON LAS CONDICIONES.
 		const enemyPiece = this.players
@@ -362,7 +372,10 @@ class Game {
 
 		if(enemyPiece && !this.checkSafeCell(enemyPiece.position)) {
 			this.setStatus(`${piece.player.name} ha matado a una ficha de ${enemyPiece.player.name}. Selecciona una ficha para mover 20 casillas.`);
+			const enemyCell = this.board.getCellByPosition(enemyPiece.position);
+			await animateCellPulse(enemyCell);
 			enemyPiece.sendToHome();
+
 			this.mustSelectPieceAdvantage = true;
 			return true;
 		}
