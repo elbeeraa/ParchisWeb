@@ -92,27 +92,38 @@ class Game {
 
     	const player = this.getCurrentPlayer();
 		const startPosition = this.board.getStartPosition(player.color);
+		const result = this.canPieceStart(startPosition);
 
 		if(this.checkTripleSix(player)) {
 			return;
 		}
 
-		if(this.diceResult === 5 && player.hasPiecesInHome() && this.canPieceStart(startPosition)) {
+		if(this.diceResult === 5 && player.hasPiecesInHome() && result.allowed) {
 			this.setStatus(`${player.name} ha sacado un ${this.diceResult}.`);
 			const piece = player.pieces.find(
        			piece => piece.isInHome()
    			);
 
 			const startCell = this.board.getCellByPosition(startPosition);
+
+
 			await animateCellPulse(startCell);
-			
-   			piece.sendToPlay(startPosition);
+
+			piece.sendToPlay(startPosition);
+
+			if (result.captured) {
+            	result.captured.sendToHome();
+				this.setStatus(`${player.name} se ha comido una ficha ${result.captured.player.name}. Selecciona una ficha para mover 20 casillas.`);
+            	this.mustSelectPieceAdvantage = true;
+			}
 
 			this.updateUI();
 
-       		setTimeout(() => {
-            	this.nextTurn();
-        	}, 1200);
+       		
+            if(!this.mustSelectPieceAdvantage) {
+				this.nextTurn();
+			}
+        	
 
 			return;
 		}
@@ -125,7 +136,9 @@ class Game {
 			this.updateUI();
 
        		setTimeout(() => {
-            	this.nextTurn();
+            	
+        		this.nextTurn();
+    			
         	}, 1200);
 			
 			return;
@@ -177,14 +190,12 @@ class Game {
 	}
 
 	canPieceStart(startPosition) {
-		//TODAS LAS FICHAS EN LA POSICION DE SALIDA DESEADA
+		
 		const piecesInStartCell = this.players
-        .flatMap(player => player.pieces)
-        .filter(piece =>
-
+        	.flatMap(player => player.pieces)
+        	.filter(piece =>
             piece.position === startPosition &&
             piece.isInPlay()
-
         );
 
     	const currentPlayer = this.getCurrentPlayer();
@@ -199,19 +210,20 @@ class Game {
         	piece => piece.player !== currentPlayer
     	);
 
-    	// PUENTE 
+		// PUENTE 
     	if (ownPieces.length === 2) {
-        	return false;
+        	return { allowed: false, captured: false };
     	}
 
-    	// COME UNA DE LAS FICHAS ENEMIGAS
+		// COME UNA DE LAS FICHAS ENEMIGAS
     	if (enemyPieces.length > 0 && piecesInStartCell.length === 2) {
-
-        	enemyPieces[0].sendToHome();
-
+        	return {
+            	allowed: true,
+            	captured: enemyPieces[0]
+        	};
     	}
 
-   		return true;
+    	return { allowed: true, captured: null };
 	}
 
 	canMove(piece, steps) {
