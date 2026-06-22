@@ -4,6 +4,11 @@ import {
 	animateCellPulse
  } from './animations.js';
 
+  import {
+	 canMove,
+	 moveSelectedPiece
+	 } from "./movement.js";
+
 class Game {
 	constructor() {
 		this.players = [];
@@ -86,67 +91,89 @@ class Game {
     		return;
 		}
 
-		this.diceResult = Math.floor(Math.random() * 6) + 1;
-
-    	this.diceResultElement.textContent = this.diceResult;
+		this.calculateDiceResult();
 
     	const player = this.getCurrentPlayer();
-		const startPosition = this.board.getStartPosition(player.color);
-		const result = this.canPieceStart(startPosition);
 
 		if(this.checkTripleSix(player)) {
 			return;
 		}
 
-		if(this.diceResult === 5 && player.hasPiecesInHome() && result.allowed) {
-			this.setStatus(`${player.name} ha sacado un ${this.diceResult}.`);
-			const piece = player.pieces.find(
-       			piece => piece.isInHome()
-   			);
+		const handleStart = await this.handleStartMovement(player);
 
-			const startCell = this.board.getCellByPosition(startPosition);
-
-
-			await animateCellPulse(startCell);
-
-			piece.sendToPlay(startPosition);
-
-			if (result.captured) {
-            	result.captured.sendToHome();
-				this.setStatus(`${player.name} se ha comido una ficha ${result.captured.player.name}. Selecciona una ficha para mover 20 casillas.`);
-            	this.mustSelectPieceAdvantage = true;
-			}
-
-			this.updateUI();
-
-       		
-            if(!this.mustSelectPieceAdvantage) {
-				this.nextTurn();
-			}
-        	
-
+		if(handleStart) {
 			return;
 		}
 
 		if(player.getPiecesInPlay().length === 0) {
-			this.setStatus(
-        		`${player.name} no puede mover ninguna ficha.`
-    		);
-			
-			this.updateUI();
 
-       		setTimeout(() => {
-            	
-        		this.nextTurn();
-    			
-        	}, 1200);
-			
+			this.handleBlockedTurn(player);
 			return;
+			
 		}
 
     	this.setStatus(
         	`${player.name} ha sacado un ${this.diceResult}. Selecciona una ficha.`
     	);
+	}
+
+	handleBlockedTurn(player) {
+
+		this.setStatus(`${player.name} no puede mover ninguna ficha.`);
+			
+		this.updateUI();
+
+       	setTimeout(() => {
+            	
+        	this.nextTurn();
+    			
+        }, 1200);
+	}
+
+	handleStartMovement(player) {
+
+		if(this.diceResult !==5 || !player.hasPiecesInHome()) {
+			return false;
+		}
+
+		const startPosition = this.board.getStartPosition(player.color);
+		const result = this.canPieceStart(startPosition);
+
+		if(!result.allowed) {
+			this.setStatus(`${player.name} no puede sacar una ficha de casa.`);
+			return false;
+		}
+
+		this.setStatus(`${player.name} ha sacado un ${this.diceResult}.`);
+
+		const piece = player.pieces.find(
+       		piece => piece.isInHome());
+
+		const startCell = this.board.getCellByPosition(startPosition);
+
+		await animateCellPulse(startCell);
+
+		piece.sendToPlay(startPosition);
+
+		if (result.captured) {
+            result.captured.sendToHome();
+			this.setStatus(`${player.name} se ha comido una ficha ${result.captured.player.name}. Selecciona una ficha para mover 20 casillas.`);
+            this.mustSelectPieceAdvantage = true;
+		}
+
+		this.updateUI();
+
+       		
+        if(!this.mustSelectPieceAdvantage) {
+			this.nextTurn();
+		}
+        
+		return true;
+	}
+
+	calculateDiceResult() {
+			this.diceResult = Math.floor(Math.random() * 6) + 1;
+			this.diceResultElement.textContent = this.diceResult;
 	}
 
 	checkTripleSix(player) {
@@ -252,23 +279,12 @@ class Game {
 
 		const player = this.getCurrentPlayer();
 
-		//CASTIGOS
-		//-------------------------------
-
-		//castigo de 3 seises
-		if(this.mustSelectPieceToHome) {
-			this.handleTripleSixPenalty(player, piece);
+		//CASTIGOS Y VENTAJAS
+		if(this.handleSpecialStates(player, piece)) {
 			return;
 		}
 
-		//VENTAJAS
-		//-------------------------------
-		if(this.mustSelectPieceAdvantage) {
-			this.handleMoveAdvantage(piece, player);
-			return;
-		}
-
-		// VALIDACIÓN 
+		// VALIDACIONES
 		// HAY DADO, JUGADOR ACTUAL, QUE NO ESTE EN CASA NI META
 		if(!this.canSelectPiece(player, piece)) {
 			return;	
@@ -277,6 +293,23 @@ class Game {
 		//MOVIMIENTO DE LA FICHA
 		await this.moveSelectedPiece(player, piece);
 		
+	}
+
+	handleSpecialStates(player, piece) {
+
+		//CASTIGO DE 3 SEISES
+		if(this.mustSelectPieceToHome) {
+			this.handleTripleSixPenalty(player, piece);
+			return true;
+		}
+
+		//VENTAJA MOVER 20 CASILLAS
+		if(this.mustSelectPieceAdvantage) {
+			this.handleMoveAdvantage(piece, player);
+			return true;
+		}
+
+		return false;
 	}
 
 	async handleMoveAdvantage(piece, player) {
