@@ -9,7 +9,8 @@ class Board {
         this.assignTrack();
         this.assignSafeCells();
         this.assignStartCells();
-        this.assignGoalLanes();
+        this.assignGoalCell();
+        this.assignFinalLanes();
     }
 
     createCells() {
@@ -81,6 +82,24 @@ class Board {
         });
     }
 
+    assignFinalLanes() {
+        const finalLanePositions = {
+            "yellow": [[17,9],[16,9],[15,9],[14,9],[13,9],[12,9],[11,9],[10,9]],
+            "red": [[1,9],[2,9],[3,9],[4,9],[5,9],[6,9],[7,9],[8,9]],
+            "green": [[9,1],[9,2],[9,3],[9,4],[9,5],[9,6],[9,7],[9,8]],
+            "blue": [[9,17],[9,16],[9,15],[9,14],[9,13],[9,12],[9,11],[9,10]]
+        };  
+
+        for (const color in finalLanePositions) {
+            finalLanePositions[color].forEach(coords => {
+                const cell = this.getCellByCoords(coords[0], coords[1]);
+                if (cell) {
+                    cell.type = "final-" + color;
+                }
+            });
+        }
+    }
+
     assignStartCells() {
         this.getCellByPosition(5).startColor = "yellow";
         this.getCellByPosition(22).startColor = "blue";
@@ -88,7 +107,7 @@ class Board {
         this.getCellByPosition(40).startColor = "red";
     }
 
-    assignGoalLanes() {
+    assignGoalCell() {
         this.getCellByCoords(9, 9).goalColor = "purple";
     }
 
@@ -146,6 +165,10 @@ class Board {
 
             if (cell.goalColor) {
                 div.classList.add("goal");
+            }
+
+            if(cell.type === "lane") {
+                div.classList.add("lane");
             }
 
             board.appendChild(div);

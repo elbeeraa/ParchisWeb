@@ -163,6 +163,7 @@ h1 {
     box-shadow: inset 0 0 0 2px rgb(0, 0, 0);
 }
 
+
 .goal {
     background: #a63cff;
     border-color: rgba(0, 0, 0, 0.3);
@@ -188,48 +189,19 @@ h1 {
     background: #f1e50a;
 }
 
-.lane-cell {
-    color: #111;
-    border-color: rgba(0, 0, 0, 0.2);
+.final-red {
+    background: #ff3b1f;
 }
 
-.track-cell {
-    background: #ffffff;
-    color: #1d1d1d;
-    font-size: 0.7em;
+.final-blue {
+    background: #3f7cf1;
 }
-
-.track-cell.safe {
-    box-shadow: inset 0 0 0 2px rgba(255, 153, 0, 0.95);
-}
-
-.track-cell.start {
-    background: #ffb04d;
-}
-
-.lane-red {
-    background: #e34a36;
-}
-
-.lane-blue {
-    background: #4b7ef2;
-}
-
-.lane-green {
+.final-green {
     background: #49c94e;
 }
 
-.lane-yellow {
-    background: #f4dc19;
-}
-
-.center-cell {
-    background: #a63cff;
-    border-color: rgba(0, 0, 0, 0.3);
-}
-
-.center-goal {
-    background: #a63cff;
+.final-yellow {
+    background: #f1e50a;
 }
 
 /* PIECES */
