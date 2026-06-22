@@ -4,10 +4,10 @@ import {
 	animateCellPulse
  } from './animations.js';
 
-  import {
-	 canMove,
-	 moveSelectedPiece
-	 } from "./movement.js";
+//   import {
+// 	 canMove,
+// 	 moveSelectedPiece
+// 	 } from "./movement.js";
 
 class Game {
 	constructor() {
@@ -77,6 +77,15 @@ class Game {
 		this.setStatus('Juego iniciado. Pulsa Tirar Dados.');
 	}
 
+	updateUI() {
+		const currentPlayer = this.getCurrentPlayer();
+		this.currentPlayerElement.textContent = currentPlayer.name;
+		this.currentPlayerElement.style.borderColor = currentPlayer.color;
+		this.currentPlayerElement.style.color = currentPlayer.color;
+		this.diceResultElement.textContent = this.diceResult !== null ? this.diceResult : '---';
+		this.board.render(this.players,this);
+	}
+
 	getCurrentPlayer() {
 		return this.players[this.currentPlayerIndex];
 	}
@@ -117,6 +126,11 @@ class Game {
     	);
 	}
 
+	calculateDiceResult() {
+			this.diceResult = Math.floor(Math.random() * 6) + 1;
+			this.diceResultElement.textContent = this.diceResult;
+	}
+
 	handleBlockedTurn(player) {
 
 		this.setStatus(`${player.name} no puede mover ninguna ficha.`);
@@ -130,7 +144,7 @@ class Game {
         }, 1200);
 	}
 
-	handleStartMovement(player) {
+	async handleStartMovement(player) {
 
 		if(this.diceResult !==5 || !player.hasPiecesInHome()) {
 			return false;
@@ -171,11 +185,6 @@ class Game {
 		return true;
 	}
 
-	calculateDiceResult() {
-			this.diceResult = Math.floor(Math.random() * 6) + 1;
-			this.diceResultElement.textContent = this.diceResult;
-	}
-
 	checkTripleSix(player) {
 
 		if (this.diceResult !== 6) {
@@ -205,15 +214,6 @@ class Game {
     	this.diceResult = null;
 
     	this.updateUI();
-	}
-
-	updateUI() {
-		const currentPlayer = this.getCurrentPlayer();
-		this.currentPlayerElement.textContent = currentPlayer.name;
-		this.currentPlayerElement.style.borderColor = currentPlayer.color;
-		this.currentPlayerElement.style.color = currentPlayer.color;
-		this.diceResultElement.textContent = this.diceResult !== null ? this.diceResult : '---';
-		this.board.render(this.players,this);
 	}
 
 	canPieceStart(startPosition) {
@@ -255,24 +255,60 @@ class Game {
 
 	canMove(piece, steps) {
 
-		//VALIDA SI LA POSICION FINAL DE LA FICHA ES UNA CELDA SEGURA Y SI HAY MAS DE 2 FICHAS EN ESA CELDA
+		//VALIDA PUENTES Y MAXIMO DE FICHAS EN CELDA FINAL
 
-		//TODO HACER QUE VALIDE SI HAY PUENTES	
+		if(!this.handleBridgeCheck(piece, steps)) {
+			return false;
+		}
 
-    	const newPosition =
-       		((piece.position - 1 + steps) % 72) + 1;
+		if(!this.handleMaxPiecesInCell(piece, steps)) {
+			return false;
+		}
+    	return true;
+	}
 
-    	// Fichas en esa posición
-    	const piecesInCell = this.players
-        	.flatMap(player => player.pieces)
-        	.filter(other =>
-
-            other.position === newPosition &&
-            other.isInPlay()
-
-        );
+	handleMaxPiecesInCell(piece, steps) {
+		
+		const newPosition = ((piece.position - 1 + steps) % 72) + 1;
+		// Fichas en esa posición
+    	const piecesInCell = this.getPiecesInCell(newPosition);
 
     	return piecesInCell.length < 2;
+	}
+
+
+	handleBridgeCheck(piece, steps) {
+		
+		for (let i = 1; i <= steps; i++) {
+
+        	const position =
+            	((piece.position - 1 + i) % 72) + 1;
+
+        	if (this.hasBridge(position)) {
+            	return false;
+        	}
+    	}
+		return true;
+	}
+
+	hasBridge(position) {
+		
+		const piecesInCell = this.getPiecesInCell(position);
+		
+		if(piecesInCell.length !== 2) {
+			return false;
+		}
+
+		return piecesInCell[0].player === piecesInCell[1].player;
+	}
+
+	getPiecesInCell(position) {
+		return this.players
+			.flatMap(player => player.pieces)
+			.filter(piece =>
+				piece.position === position &&
+				piece.isInPlay()
+			);
 	}
 
 	async selectPiece(piece){
@@ -401,7 +437,6 @@ class Game {
 		this.nextTurn();
 	}
 
-
 	async checkKill(piece) {
 
 		//PRIMERO SELECCIONAMOS TODAS LAS FICHAS DEL JUEGO CON FLATMAP Y LUEGO CON FIND BUSCAMOS CON LAS CONDICIONES.
@@ -436,7 +471,6 @@ class Game {
 			this.rollDiceButton.disabled = true;
 		}
 	}
-
 
 	checkSafeCell(position) {
     	return this.board.isSafeCell(position);
