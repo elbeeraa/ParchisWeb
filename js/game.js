@@ -22,9 +22,10 @@ class Game {
 		this.diceResult = null;
 
 		this.numberCounter = 0;
-		this.mustSelectPieceToHome = false;
 
+		this.mustSelectPieceToHome = false;
 		this.mustSelectPieceAdvantage = false;
+		this.mustSelectPieceToOpenBridge = false;
 		
 
 		this.initializePlayers();
@@ -104,18 +105,27 @@ class Game {
 
     	const player = this.getCurrentPlayer();
 
+		//IF ITS 6, INCREASE THE COUNTER AND CHECK IF IT'S THE THIRD TIME. IF YES, SET THE FLAG TO SEND A PIECE TO HOME
 		if(this.checkTripleSix(player)) {
 			return;
 		}
 
+		//IF THE PLAYER CAN START A PIECE, IT WILL HANDLE IT AND RETURN TRUE. IF NOT, IT WILL RETURN FALSE AND CONTINUE WITH THE NORMAL FLOW.
 		const handleStart = await this.handleStartMovement(player);
 
 		if(handleStart) {
+			//RETURN CUZ THE PLAYED HAVE STARTED A PIECE.
 			return;
 		}
 
-		if(player.getPiecesInPlay().length === 0) {
+		if(this.mustOpenBridge(player)) {
+			return;
+		}
 
+		//IF THE PLAYER HAS NO PIECES IN PLAY, IT WILL HANDLE THE BLOCKED TURN. 
+		if(player.getPiecesInPlay().length === 0 || !this.checkIfAnyPieceCanMove(player)) {
+
+			//MESSAGE AND NEXT TURN
 			this.handleBlockedTurn(player);
 			return;
 			
@@ -126,9 +136,30 @@ class Game {
     	);
 	}
 
+	checkIfAnyPieceCanMove(player) {
+		return player.getPiecesInPlay().some(piece => this.canMove(piece, this.diceResult));
+	}
+
 	calculateDiceResult() {
 			this.diceResult = Math.floor(Math.random() * 6) + 1;
 			this.diceResultElement.textContent = this.diceResult;
+	}
+
+	mustOpenBridge(player) {
+		if(this.diceResult !== 6) {
+			return false;
+		}
+
+		if(this.getPiecesInBridge(player).length > 0) {
+			this.setStatus(`${player.name} debe abrir un puente. Selecciona una ficha para moverla.`);
+			this.mustSelectPieceToOpenBridge = true;
+			return true;
+		}
+
+	}
+
+	getPiecesInBridge(player) {
+		return player.getPiecesInPlay().filter(piece => this.hasBridge(piece.position));
 	}
 
 	handleBlockedTurn(player) {
@@ -144,6 +175,7 @@ class Game {
         }, 1200);
 	}
 
+	// DEPENDNG IF U CAN START A PIECE OR NOT. IF NOT -> MESSAGE AND NEXT TURN. IF YES -> START PIECE AND CHECK IF U KILL AN ENEMY PIECE. IF YES -> MESSAGE AND MUST SELECT A PIECE TO MOVE 20 CELLS. IF NOT -> NEXT TURN.
 	async handleStartMovement(player) {
 
 		if(this.diceResult !==5 || !player.hasPiecesInHome()) {
@@ -185,6 +217,7 @@ class Game {
 		return true;
 	}
 
+
 	checkTripleSix(player) {
 
 		if (this.diceResult !== 6) {
@@ -213,9 +246,12 @@ class Game {
 
     	this.diceResult = null;
 
+		this.numberCounter = 0;
+
     	this.updateUI();
 	}
 
+	// LOOK IF A PIECE CAN START ON HE START CELL (CHECKING IF THERE ARE 2 PIECES OF THE SAME PLAYER -> U CANT MOVE (false)/ OR IF THERE IS AN ENEMY PIECE -> U CAN MOVE AND KILL IT(true)))
 	canPieceStart(startPosition) {
 		
 		const piecesInStartCell = this.players
@@ -255,7 +291,7 @@ class Game {
 
 	canMove(piece, steps) {
 
-		//VALIDA PUENTES Y MAXIMO DE FICHAS EN CELDA FINAL
+		//VALIDA PUENTES Y MAXIMO DE FICHAS EN CELDA 
 
 		if(!this.handleBridgeCheck(piece, steps)) {
 			return false;
@@ -276,7 +312,7 @@ class Game {
     	return piecesInCell.length < 2;
 	}
 
-
+	//CHECK IF THE PEICE UWANT TO MOVE WILL CROSS A BRIDGE. IF YES, RETURN FALSE. IF NOT, RETURN TRUE.
 	handleBridgeCheck(piece, steps) {
 		
 		for (let i = 1; i <= steps; i++) {
@@ -345,7 +381,45 @@ class Game {
 			return true;
 		}
 
-		return false;
+		//FORCED TO MOVE PIECE TO OPEN BRIDGE
+		if(this.mustSelectPieceToOpenBridge) {
+			this.handleMoveToOpenBridge(piece, player);
+			return true;
+		}
+	}
+
+	async handleMoveToOpenBridge(piece, player) {
+
+		if (piece.player !== player) {
+        	return;
+    	}
+
+    	if (piece.isInHome() || piece.isInGoal()) {
+        	return;
+    	}
+
+    	if (!this.canMove(piece, this.diceResult)) {
+
+        	this.setStatus("No puedes mover esa ficha.");
+
+        	return;
+    	}
+
+		const piecesInBridge = this.getPiecesInBridge(player);
+		if(piecesInBridge.length > 0 && !piecesInBridge.includes(piece)) {
+			this.setStatus("Debes mover una ficha que esté en un puente.");
+			return;
+		}
+
+    	// piece.move(20);
+		await animatePieceMovement(this, piece, this.diceResult);
+
+    	this.mustSelectPieceToOpenBridge = false;
+
+    	this.updateUI();
+
+		// MIRAR SI FUINCIONA CORRECTAMENTE
+    	this.handleNextTurnAfterMove(player);
 	}
 
 	async handleMoveAdvantage(piece, player) {
