@@ -64,4 +64,4 @@ This project has no build step or external dependencies. Open `index.html` direc
 
 ## License
 
-No license file is included yet. Add one if you want to publish the project with a specific license.
+No license file is included yet.
