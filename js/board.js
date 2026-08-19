@@ -83,21 +83,46 @@ class Board {
     }
 
     assignFinalLanes() {
-        const finalLanePositions = {
+        const finalLaneCoords = {
             "yellow": [[17,9],[16,9],[15,9],[14,9],[13,9],[12,9],[11,9],[10,9]],
             "red": [[1,9],[2,9],[3,9],[4,9],[5,9],[6,9],[7,9],[8,9]],
             "green": [[9,1],[9,2],[9,3],[9,4],[9,5],[9,6],[9,7],[9,8]],
             "blue": [[9,17],[9,16],[9,15],[9,14],[9,13],[9,12],[9,11],[9,10]]
-        };  
+        };
 
-        for (const color in finalLanePositions) {
-            finalLanePositions[color].forEach(coords => {
+        this.finalLanePositions = {};
+
+        const baseForColor = { yellow: 100, red: 200, green: 300, blue: 400 };
+
+        for (const color in finalLaneCoords) {
+            this.finalLanePositions[color] = [];
+            const base = baseForColor[color] || 500;
+            finalLaneCoords[color].forEach((coords, idx) => {
                 const cell = this.getCellByCoords(coords[0], coords[1]);
                 if (cell) {
                     cell.type = "final-" + color;
+                    // assign a unique position number for final lane cells
+                    cell.position = base + idx + 1; 
+                    this.finalLanePositions[color].push(cell.position);
                 }
             });
         }
+
+        // Gateway overrides (explicit positions requested by user)
+        this.gatewayPosition = {
+            blue: 18,
+            yellow: 72,
+            red: 36,
+            green: 54
+        };
+    }
+
+    getFinalLanePositions(color) {
+        return this.finalLanePositions && this.finalLanePositions[color] ? this.finalLanePositions[color] : [];
+    }
+
+    getGatewayPosition(color) {
+        return this.gatewayPosition ? this.gatewayPosition[color] : null;
     }
 
     assignStartCells() {

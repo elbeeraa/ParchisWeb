@@ -4,7 +4,9 @@ class Piece{
         this.player = player;
         this.position = null;
         this.inHome = true;
-        this.inGoal = false;
+        
+        this.status = "board"; // "board", "finalBoard", "goal"
+        this.finalIndex = null; // index inside final lane when status === 'finalBoard'
 
         
         this.homeRow = homeRow;
@@ -12,7 +14,11 @@ class Piece{
     }
 
     move(steps) {
-        if (this.inHome || this.inGoal) return;
+        if (this.inHome || this.status === "goal") return;
+
+        if(this.status === "finalBoard") {
+            
+        }
 
         this.position = ((this.position - 1 + steps) % 72) + 1;
     }
@@ -20,19 +26,17 @@ class Piece{
     sendToHome() {
         this.position = null;
         this.inHome = true;
-        this.inGoal = false;
     }
 
     sendToGoal() {
         this.position = null;
         this.inHome = false;
-        this.inGoal = true;
+        this.status = "goal";
     }
 
     sendToPlay(startPosition) {
         this.position = startPosition;
         this.inHome = false;
-        this.inGoal = false;
     }
 
     getPosition() {
@@ -44,11 +48,11 @@ class Piece{
     }
 
     isInPlay() {
-        return !this.inHome && !this.inGoal;
+        return !this.inHome && this.status !== "goal";
     }
 
     isInGoal() {
-        return this.inGoal;
+        return this.status === "goal";
     } 
 
     countPiecesHome(){
