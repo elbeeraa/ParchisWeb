@@ -1,11 +1,13 @@
 
 - CUANDO NO TIENE FICHAS EN CASA, EL NUMERO 6 SE CONVIERTE EN 7
+- QUE CUENTE HACIA ATRAS EN LA FILA FINAL SI NO TIENE EL NUMERO EXACTO PARA LLEGAR A LA ULTIMA CASILLA.
 
 
 - SI LAS FICHAS QUE ESTAN JUGANDO NO PUEDEN MOVERSE, SE QUEDA EL JUEGO ESTANCADO. TIENE QUE PASAR TURNO. -- VALIDAR QUE FUNCIONA BIEN AHORA
 - CONTAR CUANTAS VECES SACA 6 -> A LA TERCERA SE VA A CASA   ---- MIRAR SI ESTÁ BIEN
 
 ---------PARTE FINAL------------
--- GESTIONAR TODA LA PARTE FINAL
--- EN LAS FILAS FINALES NO AFECTA EL TRIPLE 6
--- CUANDO LLEGA UNA FICHA A META SE SUMA 10 A UNA FICHA
+-- GESTIONAR TODA LA PARTE FINAL -> Añadido que la ficha se meta en la fila correspondiente de casillas finales. (en animations -> animatePieceMovement)
+-- EN LAS FILAS FINALES NO AFECTA EL TRIPLE 6   -> Añadido una validacion de que si la ficha está en estado finalBoard, no afecten los estados especiales. VER SI FUNCIONA (handleSpecialStates)
+-- CUANDO LLEGA UNA FICHA A META SE SUMA 10 A UNA FICHA -> Añadido. He metido una nueva condicion especial que va a ser mover 10 y he cambiado el metodo de mover 20 por una generica para poder usar mover 10 y 20.
+

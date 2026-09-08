@@ -25,6 +25,7 @@ class Game {
 
 		this.mustSelectPieceToHome = false;
 		this.mustSelectPieceAdvantage = false;
+		this.mustSelectPieceGoalAdvantage = false;
 		this.mustSelectPieceToOpenBridge = false;
 		
 
@@ -369,6 +370,10 @@ class Game {
 
 	handleSpecialStates(player, piece) {
 
+		if(piece.status === "finalBoard"){
+			return false;
+		}
+
 		//CASTIGO DE 3 SEISES
 		if(this.mustSelectPieceToHome) {
 			this.handleTripleSixPenalty(player, piece);
@@ -377,7 +382,13 @@ class Game {
 
 		//VENTAJA MOVER 20 CASILLAS
 		if(this.mustSelectPieceAdvantage) {
-			this.handleMoveAdvantage(piece, player);
+			this.handleMoveAdvantage(piece, player, 20);
+			return true;
+		}
+
+		//VENTAJA POR METER UNA FICHA EN META: MOVER 10 CASILLAS
+		if(this.mustSelectPieceGoalAdvantage) {
+			this.handleMoveAdvantage(piece, player, 10);
 			return true;
 		}
 
@@ -422,7 +433,7 @@ class Game {
     	this.handleNextTurnAfterMove(player);
 	}
 
-	async handleMoveAdvantage(piece, player) {
+	async handleMoveAdvantage(piece, player, steps) {
 
 		if (piece.player !== player) {
         	return;
@@ -432,17 +443,21 @@ class Game {
         	return;
     	}
 
-    	if (!this.canMove(piece, 20)) {
+		if (!this.canMove(piece, steps)) {
 
-        	this.setStatus("No puedes mover esa ficha 20 casillas.");
+			this.setStatus(`No puedes mover esa ficha ${steps} casillas.`);
 
         	return;
     	}
 
-    	// piece.move(20);
-		await animatePieceMovement(this, piece, 20);
+		// piece.move(steps);
+		await animatePieceMovement(this, piece, steps);
 
-    	this.mustSelectPieceAdvantage = false;
+		if (steps === 20) {
+			this.mustSelectPieceAdvantage = false;
+		} else {
+			this.mustSelectPieceGoalAdvantage = false;
+		}
 
     	this.updateUI();
 
@@ -483,6 +498,16 @@ class Game {
 	async moveSelectedPiece(player, piece) {
 		// piece.move(this.diceResult);\
 		await animatePieceMovement(this, piece, this.diceResult);
+		
+		const reachedGoal = piece.isInGoal();
+		const hasWon = this.checkWin(player);
+
+		if (reachedGoal && !hasWon) {
+			this.mustSelectPieceGoalAdvantage = true;
+			this.setStatus(`${player.name} ha metido una ficha en meta. Selecciona una ficha para mover 10 casillas.`);
+			this.updateUI();
+			return;
+		}
 
 		const hasKilled = await this.checkKill(piece);
 
@@ -491,8 +516,6 @@ class Game {
 		if(hasKilled) {
 			return;
 		}
-
-		this.checkWin(piece);
 
 		//GESTIONA EL SIGUIENTE TURNO
 		this.handleNextTurnAfterMove(player);
@@ -539,11 +562,14 @@ class Game {
 	}
 
 	//TODO TODA LA LOGICA DE GANAR EL JUEGO
-	checkWin(piece) {
-		if(piece.isInGoal()) {
-			this.setStatus(`${piece.player.name} ha ganado el juego!`);
+	checkWin(player) {
+		if(player.pieces.every(piece => piece.isInGoal())) {
+			this.setStatus(`${player.name} ha ganado el juego!`);
 			this.rollDiceButton.disabled = true;
+			return true;
 		}
+
+		return false;
 	}
 
 	checkSafeCell(position) {

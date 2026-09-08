@@ -30,7 +30,7 @@ class Piece{
 
     sendToGoal() {
         this.position = null;
-        this.inHome = false;
+        this.inHome = true;
         this.status = "goal";
     }
 

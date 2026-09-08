@@ -242,6 +242,8 @@ class Board {
                     pieceDiv.addEventListener("click", () => {
                         game.selectPiece(piece);
                     });
+                } else if(piece.isInGoal()) {
+                    pieceDiv.classList.add("piece-goal");
                 }
 
                 cell.element.appendChild(pieceDiv);
