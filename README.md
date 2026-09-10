@@ -58,7 +58,7 @@ This project has no build step or external dependencies. Open `index.html` direc
 ## FUTURE IMPLEMENTATIONS AND IMPROVEMENTS
 
 - Better organization of the diferent methods from `js/game.js`. Divide into different functions. 
-- online implementation? (IT WOULD BE SO NICE)
+- online implementation?
 - Better visual design of the game. (Maybe an dice animation?)
 - Maybe change the UI to English or add a feature to choose the lenguage u want (english or spanish)
 
