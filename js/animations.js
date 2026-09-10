@@ -21,17 +21,18 @@ export async function animatePieceMovement(game, piece, steps, speed = 100) {
             if (idx <= finalLen - 1) {
                 piece.finalIndex = idx;
             } else {
-                // bounce (reflect) beyond the end
+                // PARA QUE HAGA REBOTE
                 const exceso = idx - (finalLen - 1);
                 piece.finalIndex = (finalLen - 1) - exceso;
-                if (piece.finalIndex < 0) piece.finalIndex = 0;
+                if (piece.finalIndex < 0) {
+                    piece.finalIndex = 0;
+                }
             }
 
-            const pos = game.board.getFinalLanePositions(piece.player.color)[piece.finalIndex];
-            if (pos) piece.position = pos;
+            piece.position = lane[piece.finalIndex];
 
             // If reached last index, mark goal
-            if (piece.finalIndex === finalLen - 1) {
+            if (piece.finalIndex === finalLen - 1 &&  remaining === 1) {
                 piece.sendToGoal();
             }
 
@@ -41,27 +42,25 @@ export async function animatePieceMovement(game, piece, steps, speed = 100) {
             continue;
         }
 
-        // Move one step on main track
-        piece.position = ((piece.position - 1 + 1) % 72) + 1;
-
-        // After moving, check if we hit the gateway for this color
+        // El gateway se cuenta como una casilla del recorrido principal.
+        // La entrada al pasillo final ocurre en el paso siguiente.
         const gateway = game.board.getGatewayPosition(piece.player.color);
         if (gateway && piece.position === gateway) {
-            // enter final lane
             const lane = game.board.getFinalLanePositions(piece.player.color);
             if (lane && lane.length > 0) {
                 piece.status = 'finalBoard';
                 piece.finalIndex = 0;
                 piece.position = lane[0];
-                // consume one step for entering
-                remaining -= 1;
 
-                // if no remaining steps, render and break
                 game.board.render(game.players, game);
                 await delay(speed);
+                remaining -= 1;
                 continue;
             }
         }
+
+        // Move one step on main track
+        piece.position = ((piece.position - 1 + 1) % 72) + 1;
 
         game.board.render(game.players, game);
         await delay(speed);

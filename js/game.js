@@ -194,7 +194,7 @@ class Game {
 		this.setStatus(`${player.name} ha sacado un ${this.diceResult}.`);
 
 		const piece = player.pieces.find(
-       		piece => piece.isInHome());
+       		piece => piece.isInHome() && piece.status !== 'goal');
 
 		const startCell = this.board.getCellByPosition(startPosition);
 
